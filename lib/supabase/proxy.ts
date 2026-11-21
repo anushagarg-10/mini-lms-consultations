@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "./database.types";
+import { logger } from "@/lib/logger";
 
 const PUBLIC_PATHS = ["/auth"];
 
@@ -38,8 +39,15 @@ export async function updateSession(request: NextRequest) {
   // Do not run code between createServerClient and getClaims().
   // getClaims() verifies the JWT signature (locally, via the project's JWKS)
   // and refreshes the session if it has expired.
-  const { data } = await supabase.auth.getClaims();
-  const isSignedIn = Boolean(data?.claims);
+  let isSignedIn = false;
+  try {
+    const { data } = await supabase.auth.getClaims();
+    isSignedIn = Boolean(data?.claims);
+  } catch (err) {
+    // e.g. Supabase unreachable. Treat as signed out so public pages still
+    // load; protected pages redirect to login and API routes answer 401.
+    logger.error("session check failed in proxy", { path: request.nextUrl.pathname, err });
+  }
 
   const { pathname } = request.nextUrl;
   const isPublic = pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));

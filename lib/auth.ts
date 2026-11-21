@@ -2,6 +2,8 @@ import "server-only";
 
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { AppError } from "@/lib/errors";
+import { logger } from "@/lib/logger";
 import type { Enums } from "@/lib/supabase/database.types";
 
 export type AppRole = Enums<"app_role">;
@@ -35,7 +37,20 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     .eq("id", claims.sub)
     .single();
 
-  if (error || !profile) return null;
+  if (error) {
+    // No row: the sign-up trigger should always create one, so flag it but
+    // treat the user as signed out rather than crash.
+    if (error.code === "PGRST116") {
+      logger.warn("signed-in user has no profile row", { userId: claims.sub });
+      return null;
+    }
+    // Anything else (database down, permissions) is a real failure. Throwing
+    // shows an error page instead of silently "signing the user out".
+    logger.error("profile lookup failed", { userId: claims.sub, pgCode: error.code });
+    throw new AppError(503, "auth_unavailable", "We couldn't verify your account right now.", {
+      cause: error,
+    });
+  }
 
   return { id: profile.id, email: profile.email, role: profile.role };
 });
