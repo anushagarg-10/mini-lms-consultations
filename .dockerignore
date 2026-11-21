@@ -1,0 +1,16 @@
+# Keep the build context small and free of local secrets.
+.git
+.github
+.next
+node_modules
+docs
+coverage
+*.log
+.env
+.env*.local
+supabase/.temp
+supabase/.branches
+supabase/tests
+tsconfig.tsbuildinfo
+Dockerfile
+.dockerignore

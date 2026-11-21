@@ -57,8 +57,43 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 | `npm run test:db`                                    | Runs 35 database security tests (no Docker needed)        |
 | `npx supabase db reset`                              | Rebuilds the local database from migrations and seed data |
 | `npm run typecheck`, `npm run lint`, `npm run build` | Code checks                                               |
+| `npm run format` / `npm run format:check`            | Format with Prettier / check formatting                   |
 
-GitHub Actions runs lint, the database tests, the build and the typecheck on every push and pull request (`.github/workflows/ci.yml`).
+GitHub Actions runs lint, the format check, the database tests, the build, the typecheck and a Docker image build on every push and pull request (`.github/workflows/ci.yml`).
+
+### Running with Docker
+
+The `Dockerfile` builds a small production image (Next.js standalone output, non-root user, health check). Point it at a hosted Supabase project:
+
+```bash
+docker build \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co \
+  --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key> \
+  -t mini-lms .
+docker run -p 3000:3000 mini-lms
+```
+
+The two values are build args because Next.js puts `NEXT_PUBLIC_` variables into the browser bundle at build time. Both are public by design, and the app needs no secret keys. Apply the schema to the hosted project first with `npx supabase link --project-ref <ref>` and `npx supabase db push`.
+
+### Logs
+
+Server logs are JSON, one line per event, for example:
+
+```json
+{
+  "level": "info",
+  "time": "2026-11-21T06:40:25.432Z",
+  "msg": "request",
+  "service": "mini-lms",
+  "requestId": "19bf6cfe-...",
+  "method": "POST",
+  "path": "/api/consultations",
+  "status": 201,
+  "durationMs": 42
+}
+```
+
+Every API response carries the same `x-request-id`, so a reported error can be matched to its log line. Logs contain ids only, never names, emails or request bodies. Set `LOG_LEVEL` (`debug`, `info`, `warn`, `error`) to change verbosity.
 
 ## How it works
 
