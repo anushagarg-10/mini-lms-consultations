@@ -1,15 +1,21 @@
+import "server-only";
+
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "./database.types";
 
 /**
- * Especially important if using Fluid compute: Don't put this client in a
- * global variable. Always create a new client within each function when using
- * it.
+ * Supabase client bound to the current request's auth cookies.
+ *
+ * It uses the publishable key, so every query runs as the signed-in user and
+ * is subject to RLS. The app never uses the service-role key at runtime.
+ *
+ * Create a new client per request (don't cache it in a module global).
  */
 export async function createClient() {
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
@@ -23,12 +29,13 @@ export async function createClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have proxy refreshing
-            // user sessions.
+            // Called from a Server Component, where cookies are read-only.
+            // Safe to ignore: proxy.ts refreshes the session on every request.
           }
         },
       },
     },
   );
 }
+
+export type ServerSupabaseClient = Awaited<ReturnType<typeof createClient>>;
