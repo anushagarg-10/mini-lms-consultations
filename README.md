@@ -53,14 +53,15 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 
 ### Useful commands
 
-| Command                                              | What it does                                              |
-| ---------------------------------------------------- | --------------------------------------------------------- |
-| `npm run test:db`                                    | Runs 38 database security tests (no Docker needed)        |
-| `npx supabase db reset`                              | Rebuilds the local database from migrations and seed data |
-| `npm run typecheck`, `npm run lint`, `npm run build` | Code checks                                               |
-| `npm run format` / `npm run format:check`            | Format with Prettier / check formatting                   |
+| Command                                              | What it does                                                                |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| `npm run test:db`                                    | Runs 38 database security tests (no Docker needed)                          |
+| `npm run test:api`                                   | Runs 31 API tests over real HTTP (needs the app and local Supabase running) |
+| `npx supabase db reset`                              | Rebuilds the local database from migrations and seed data                   |
+| `npm run typecheck`, `npm run lint`, `npm run build` | Code checks                                                                 |
+| `npm run format` / `npm run format:check`            | Format with Prettier / check formatting                                     |
 
-GitHub Actions runs lint, the format check, the database tests, the build, the typecheck and a Docker image build on every push and pull request (`.github/workflows/ci.yml`).
+GitHub Actions runs lint, the format check, the database tests, the build, the typecheck, a Docker image build, and the API tests against a real Supabase started in CI, on every push and pull request (`.github/workflows/ci.yml`).
 
 ### Running with Docker
 
@@ -165,7 +166,7 @@ Admins can't take this path at all: the API answers 403, and the database's writ
 ## With more time
 
 - Rate limiting on sign-in and booking.
-- API and end-to-end browser tests, running in CI.
+- End-to-end browser tests (e.g. Playwright) for the main flows.
 - Search on the admin view and pagination on the student dashboard.
 - A tutor role with availability: each consultation gets a tutor and a duration, students book from the tutor's free slots, and a Postgres exclusion constraint makes overlapping bookings for the same tutor impossible. Each tutor sees the consultations booked with them, and can accept or decline for reasons other than scheduling (illness, subject fit), since clashes are already prevented by the database.
 - A meeting mode on each booking (online or in person), with a meeting link or a room. It needs the tutor role to be meaningful, and the brief fixes the booking fields, so it was left out.

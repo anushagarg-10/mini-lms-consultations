@@ -102,7 +102,7 @@ Migrations, in order: `20261121000100_profiles_and_roles.sql`, `20261121000200_c
 
 `is_admin()` and `is_student()` are `SECURITY DEFINER` (so they can read `profiles` without recursing through RLS) and `STABLE`. Policies call them as `(select public.is_admin())`, so Postgres evaluates each once per query instead of once per row.
 
-These rules are covered by `npm run test:db` (38 checks, run on PGlite so no Docker is needed, and run in CI).
+These rules are covered by `npm run test:db` (38 checks, run on PGlite so no Docker is needed, and run in CI). On top of that, `npm run test:api` (31 tests, `tests/api/`) sends real HTTP requests with real sessions to the running app and checks every status code the API returns: 200, 201, 400, 401, 403, 404, 409, 415 and 422. Each run signs up its own students, so it never depends on the seed data. CI runs it against a Supabase started in Docker.
 
 ## 4. Folder structure
 

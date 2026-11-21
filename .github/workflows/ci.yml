@@ -64,3 +64,51 @@ jobs:
           --build-arg NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
           --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=ci-placeholder-key
           -t mini-lms:ci .
+
+  api:
+    name: API tests (real Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Only the services the API needs: Postgres, Auth, PostgREST and the gateway.
+      - name: Start Supabase
+        run: >
+          npx supabase start
+          -x realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      - name: Point the app at local Supabase
+        run: |
+          npx supabase status -o env | grep -E '^(API_URL|PUBLISHABLE_KEY)=' > "$RUNNER_TEMP/supabase.env"
+          source "$RUNNER_TEMP/supabase.env"
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: npm run build
+
+      # Run the standalone server, the same way the Docker image does.
+      - name: Start the app
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          PORT=3000 HOSTNAME=127.0.0.1 node .next/standalone/server.js > "$RUNNER_TEMP/app.log" 2>&1 &
+          for i in $(seq 1 30); do curl -sf -o /dev/null http://127.0.0.1:3000/auth/login && exit 0; sleep 1; done
+          echo "App did not start"; cat "$RUNNER_TEMP/app.log"; exit 1
+
+      - name: API tests
+        run: npm run test:api
+        env:
+          API_BASE_URL: http://127.0.0.1:3000
+
+      - name: App log
+        if: failure()
+        run: cat "$RUNNER_TEMP/app.log"
