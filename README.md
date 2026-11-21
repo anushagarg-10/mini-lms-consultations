@@ -97,6 +97,8 @@ Every API response carries the same `x-request-id`, so a reported error can be m
 
 ## How it works
 
+> For the full design write-up (why Postgres, the data model column by column, folder structure, layers, error handling, logging and scalability) see **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
 - **Pages** (`app/(app)/dashboard`, `app/(app)/admin`) load their data on the server.
 - **Changes** (book, complete, reschedule, cancel) go through REST API routes, not Server Actions:
 
