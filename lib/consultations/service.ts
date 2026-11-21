@@ -1,6 +1,8 @@
 import "server-only";
 
 import type { PostgrestError } from "@supabase/supabase-js";
+import { AppError } from "@/lib/errors";
+import { logger } from "@/lib/logger";
 import type { ServerSupabaseClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/database.types";
 import type {
@@ -16,20 +18,10 @@ import type {
  * Server Components, so reads and writes share one implementation.
  *
  * Every function takes the request-scoped Supabase client, so all queries
- * run as the signed-in user under RLS. Functions throw ServiceError with an
- * HTTP-friendly status; the API layer turns it into a JSON response.
+ * run as the signed-in user under RLS. Functions throw AppError with an
+ * HTTP-friendly status; the API layer turns it into a JSON response and
+ * pages fall back to the nearest error boundary.
  */
-
-export class ServiceError extends Error {
-  constructor(
-    public readonly status: number,
-    message: string,
-    public readonly code?: string,
-  ) {
-    super(message);
-    this.name = "ServiceError";
-  }
-}
 
 const COLUMNS =
   "id, student_id, first_name, last_name, reason, scheduled_at, status, completed_at, cancelled_at, created_at, updated_at";
@@ -52,31 +44,38 @@ function toConsultation(row: ConsultationRow): Consultation {
   };
 }
 
-/** Translate Postgres errors into user-safe ServiceErrors. */
-function fromPostgrestError(error: PostgrestError): ServiceError {
+/**
+ * Translate Postgres errors into user-safe AppErrors. Expected rule
+ * violations become 4xx with a clear message; anything else is logged here
+ * (the one place that sees the raw database error, for both API routes and
+ * pages) and becomes a generic 500.
+ */
+function fromPostgrestError(error: PostgrestError): AppError {
   switch (error.code) {
     case "23505": // unique_violation: consultations_no_double_booking_idx
-      return new ServiceError(
-        409,
-        "You already have a consultation booked at that time.",
-        "conflict",
-      );
+      return new AppError(409, "conflict", "You already have a consultation booked at that time.");
     case "23514": // check_violation: raised by our triggers / CHECK constraints
       // Trigger messages are written for end users; CHECK constraint names are not.
-      return new ServiceError(
+      return new AppError(
         422,
+        "rule_violation",
         error.message.includes("violates check constraint")
           ? "That change isn't allowed for this consultation."
           : error.message,
-        "rule_violation",
       );
     case "42501": // insufficient_privilege / RLS rejection
-      return new ServiceError(403, "You don't have permission to do that.", "forbidden");
+      return new AppError(403, "forbidden", "You don't have permission to do that.");
     case "PGRST116": // .single() found no row: missing, or hidden by RLS
-      return new ServiceError(404, "Consultation not found.", "not_found");
+      return new AppError(404, "not_found", "Consultation not found.");
     default:
-      console.error("Unexpected database error", error);
-      return new ServiceError(500, "Something went wrong. Please try again.", "internal");
+      logger.error("unexpected database error", {
+        pgCode: error.code,
+        pgMessage: error.message,
+        pgHint: error.hint,
+      });
+      return new AppError(500, "internal", "Something went wrong. Please try again.", {
+        cause: error,
+      });
   }
 }
 

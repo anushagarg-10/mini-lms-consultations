@@ -13,11 +13,18 @@ export const GET = handle(async () => {
 });
 
 /** POST /api/consultations: book a new consultation for the signed-in user. */
-export const POST = handle(async (request) => {
-  await requireUser();
+export const POST = handle(async (request, _ctx, log) => {
+  const user = await requireUser();
   const input = await parseJsonBody(request, createConsultationSchema);
   const supabase = await createClient();
   const consultation = await createConsultation(supabase, input);
+
+  log.info("consultation booked", {
+    userId: user.id,
+    consultationId: consultation.id,
+    scheduledAt: consultation.scheduledAt,
+  });
+
   return NextResponse.json(
     { data: consultation },
     { status: 201, headers: { Location: `/api/consultations/${consultation.id}` } },
