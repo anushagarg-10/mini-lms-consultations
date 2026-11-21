@@ -1,110 +1,216 @@
-<a href="https://demo-nextjs-with-supabase.vercel.app/">
-  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
-  <h1 align="center">Next.js and Supabase Starter Kit</h1>
-</a>
+# Mini LMS: Student Consultations
 
-<p align="center">
- The fastest way to build apps with Next.js and Supabase
-</p>
+A small LMS where students book and manage consultations and admins see every consultation in the system.
 
-<p align="center">
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#demo"><strong>Demo</strong></a> ·
-  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
-  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
-  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
-  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
-</p>
-<br/>
+**Stack:** Next.js 16 (App Router) · TypeScript · Supabase (Postgres, Auth, `supabase-js`, `@supabase/ssr`) · shadcn/ui + Tailwind · Zod
+
+Built on the official `with-supabase` starter.
+
+---
 
 ## Features
 
-- Works across the entire [Next.js](https://nextjs.org) stack
-  - App Router
-  - Pages Router
-  - Proxy
-  - Client
-  - Server
-  - It just works!
-- supabase-ssr. A package to configure Supabase Auth to use cookies
-- Password-based authentication block installed via the [Supabase UI Library](https://supabase.com/ui/docs/nextjs/password-based-auth)
-- Styling with [Tailwind CSS](https://tailwindcss.com)
-- Components with [shadcn/ui](https://ui.shadcn.com/)
-- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
-  - Environment variables automatically assigned to Vercel project
+| Area | What it does |
+| --- | --- |
+| Auth | Sign up, log in, log out, forgot/reset password (Supabase Auth, cookie sessions via `@supabase/ssr`) |
+| Student dashboard | Lists the student's own consultations in Upcoming / Past / Cancelled tabs |
+| Book | Form with first name, last name, reason, date and time |
+| Complete / incomplete | Checkbox on each consultation |
+| Reschedule | Pick a new future date and time |
+| Cancel | Confirm dialog; cancellation is kept as history, not deleted |
+| Admin view | `/admin`: read-only, paginated, filterable table of every consultation with the student's account email |
 
-## Demo
+---
 
-You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
+## Setup
 
-## Deploy to Vercel
+### Prerequisites
 
-Vercel deployment will guide you through creating a Supabase account and project.
+* Node.js 20+
+* Docker (Docker Desktop, OrbStack or Colima), needed by the Supabase CLI to run Supabase locally
 
-After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
+The Supabase CLI is a dev dependency, so there's nothing to install globally.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
+### Run locally
 
-The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
-
-If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
-
-## Clone and run locally
-
-1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
-
-2. Create a Next.js app using the Supabase Starter template npx command
-
-   ```bash
-   npx create-next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   yarn create next-app --example with-supabase with-supabase-app
-   ```
-
-   ```bash
-   pnpm create next-app --example with-supabase with-supabase-app
-   ```
-
-3. Use `cd` to change into the app's directory
-
-   ```bash
-   cd with-supabase-app
-   ```
-
-4. Rename `.env.example` to `.env.local` and update the following:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[INSERT SUPABASE PROJECT API PUBLISHABLE OR ANON KEY]
+```bash
+npm install
+npm run db:start            # starts local Supabase, applies migrations and seed
+npx supabase status         # copy "API URL" and "Publishable key"
+cp .env.example .env.local  # paste them in
+npm run dev                 # http://localhost:3000
 ```
 
-> [!NOTE]
-> This example uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, which refers to Supabase's new **publishable** key format.
-> Both legacy **anon** keys and new **publishable** keys can be used with this variable name during the transition period. Supabase's dashboard may show `NEXT_PUBLIC_SUPABASE_ANON_KEY`; its value can be used in this example.
-> See the [full announcement](https://github.com/orgs/supabase/discussions/29260) for more information.
+### Seeded accounts
 
-Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` can be found in [your Supabase project's API settings](https://supabase.com/dashboard/project/_?showConnect=true)
+| Email | Password | Role |
+| --- | --- | --- |
+| `admin@example.com` | `password123` | admin |
+| `student@example.com` | `password123` | student (3 consultations) |
+| `student2@example.com` | `password123` | student (2 consultations) |
 
-5. You can now run the Next.js local development server:
+New sign-ups are always students. Email confirmation is off locally (`supabase/config.toml`), so you are signed in straight after signing up. Any emails (password reset) land in Mailpit at http://127.0.0.1:54324.
 
-   ```bash
-   npm run dev
-   ```
+### Making someone an admin
 
-   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
+Roles can't be changed from the app or the public API (by design, see Security). Run this as the database owner, from Supabase Studio's SQL editor (http://127.0.0.1:54323) or `psql`:
 
-6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
+```sql
+update public.profiles set role = 'admin' where email = 'someone@example.com';
+```
 
-> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
+### Using a hosted Supabase project instead
 
-## Feedback and issues
+```bash
+npx supabase link --project-ref <ref>
+npx supabase db push        # applies supabase/migrations (not the seed)
+```
 
-Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
+Then put the project URL and publishable key in `.env.local`, and add `http://localhost:3000/**` to Auth > URL Configuration > Redirect URLs.
 
-## More Supabase examples
+### Useful scripts
 
-- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
-- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
-- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
+| Script | Purpose |
+| --- | --- |
+| `npm run test:db` | Runs the database security tests (35 checks). Uses PGlite, so **no Docker needed** |
+| `npm run db:reset` | Recreate the local DB from migrations + seed |
+| `npm run db:types` | Regenerate `lib/supabase/database.types.ts` from the local schema |
+| `npm run typecheck` / `npm run lint` / `npm run build` | Static checks |
+
+---
+
+## Architecture
+
+```
+Browser ──(fetch JSON)──▶ /api/* Route Handlers ──▶ lib/consultations/service.ts ──▶ Supabase (Postgres + RLS)
+   ▲                                                         ▲
+   └──── Server Components (dashboard, admin) ───────────────┘   reads use the same service directly
+```
+
+```
+app/
+  (app)/layout.tsx              Signed-in shell; redirects if no session; shows Admin link by role
+  (app)/dashboard/page.tsx      Student dashboard (Server Component)
+  (app)/admin/page.tsx          Admin table (Server Component, 404 for non-admins)
+  api/consultations/route.ts        GET own list, POST create
+  api/consultations/[id]/route.ts   PATCH reschedule | complete | cancel
+  api/admin/consultations/route.ts  GET all (admin), paginated
+  auth/*                        Starter auth pages (open redirect fixed in auth/confirm)
+lib/
+  auth.ts                       getCurrentUser(): verified identity + role, cached per request
+  api.ts                        handle() error mapping, requireUser(roles), parseJsonBody()
+  consultations/schemas.ts      Zod contracts shared by API and forms, DTO types
+  consultations/service.ts      All consultation queries; maps Postgres errors to HTTP statuses
+  consultations/client-api.ts   Typed fetch wrapper used by client components
+  supabase/                     Typed server, browser and proxy clients
+proxy.ts                        Session refresh + redirect signed-out users (Next 16's middleware)
+supabase/
+  migrations/                   Schema, roles, RLS, triggers
+  seed.sql                      Local users and sample data
+  tests/rls.test.mjs            Database tests
+```
+
+### API
+
+All responses are JSON. Errors share one shape: `{ "error": { "code", "message", "details?" } }`.
+
+| Method | Path | Who | Body / query | Success |
+| --- | --- | --- | --- | --- |
+| GET | `/api/consultations` | signed in | | `200 { data: Consultation[] }` |
+| POST | `/api/consultations` | signed in | `{ firstName, lastName, reason, scheduledAt }` | `201 { data }` + `Location` |
+| PATCH | `/api/consultations/:id` | owner | exactly one of `{ scheduledAt }`, `{ completed: boolean }`, `{ status: "cancelled" }` | `200 { data }` |
+| GET | `/api/admin/consultations` | admin | `?page=&pageSize=(≤100)&status=scheduled\|cancelled` | `200 { data, pagination }` |
+
+Status codes: `400` validation, `401` not signed in, `403` wrong role, `404` not found or not yours, `409` double booking, `415` non-JSON body, `422` business rule (e.g. rescheduling a cancelled consultation).
+
+`scheduledAt` is an ISO 8601 timestamp with an offset. The browser converts the user's local `datetime-local` value to UTC, and dates are displayed back in the viewer's timezone.
+
+### Data model
+
+```
+auth.users 1──1 public.profiles (id, email, role: student|admin)
+                     1
+                     │
+                     * public.consultations
+                         id, student_id → profiles
+                         first_name, last_name, reason, scheduled_at
+                         status: scheduled|cancelled, cancelled_at
+                         completed_at (NULL = incomplete)
+                         created_at, updated_at
+```
+
+Indexes: `(student_id, scheduled_at)` for the dashboard, `(scheduled_at desc, id)` for the admin list, and a partial unique index on `(student_id, scheduled_at) where status = 'scheduled'` to stop double booking.
+
+---
+
+## Key decisions and justifications
+
+### 1. Roles live in `public.profiles`, enforced with RLS
+
+* A trigger on `auth.users` creates a `profiles` row for every sign-up with `role = 'student'`.
+* The role is **not** taken from `user_metadata`: users can edit their own metadata with `supabase.auth.updateUser()`, so trusting it would let anyone become admin.
+* Authenticated users have `SELECT` only on `profiles` (no insert or update grant), so self-promotion is impossible even through PostgREST directly. Admins are created by an operator (see above).
+* `public.is_admin()` is a `SECURITY DEFINER`, `STABLE` helper used in policies. Policies call it as `(select public.is_admin())` so Postgres evaluates it once per statement rather than per row, which keeps the admin list fast as the table grows.
+* The role is read per request (cached with React `cache()`), so promotions and demotions take effect immediately. The alternative, a Custom Access Token Hook that puts the role in the JWT, saves one indexed primary-key lookup but leaves stale roles in tokens until they refresh. For a role that gates every admin read, I chose freshness. The hook is a reasonable optimisation at much larger scale.
+* A single `role` column fits the two roles in scope. If roles multiply (tutor, parent, etc.) or need permissions, I'd move to `user_roles` + `role_permissions` tables; `is_admin()` is the only place that would need to change in SQL.
+
+### 2. The database is the security boundary, the API is the interface
+
+The publishable key is public by design, so any signed-in user can call the Supabase REST API directly and skip the Next.js routes. All the important rules are therefore enforced in Postgres, and the API layer repeats them only to give good error messages:
+
+| Layer | Enforces |
+| --- | --- |
+| **Grants** (column-level) | Students can insert only `first_name, last_name, reason, scheduled_at` and update only `scheduled_at, status, completed_at`. No `DELETE` for anyone. Supabase's default `GRANT ALL` to `anon`/`authenticated` is revoked first |
+| **RLS** | Students see and change only their own rows. Admins can read all rows but have **no** write policy, so "read-only admin" is enforced by the database, not just by the UI |
+| **Triggers** | Booking and rescheduling must be in the future; cancel is terminal; a completed consultation can't be rescheduled or cancelled; `completed_at` and `cancelled_at` are always server time; `student_id` can't change |
+| **Constraints** | Field lengths, status/timestamp consistency, no double booking |
+
+The route handlers and Server Components use the request-scoped Supabase client (the user's JWT), never the service-role key. A bug in an API handler can't therefore expose another student's data; the worst case is a less friendly error. The `test:db` suite exercises each of these rules as each role.
+
+### 3. Route handlers for writes, Server Components for the first read
+
+As requested, all mutations go through REST route handlers (no Server Actions). Pages read their initial data on the server through the **same** `service.ts` functions the `GET` endpoints use, which avoids an extra HTTP round trip and a loading spinner, while keeping one implementation of each query. After a mutation the client calls `router.refresh()` to re-render with fresh server data, so there's no client cache to keep in sync.
+
+### 4. Cancel is a soft state change, not a DELETE
+
+Cancelling sets `status = 'cancelled'` and `cancelled_at`. That keeps the history for admins (and for reporting), lets the same slot be re-booked thanks to the partial unique index, and means there is no destructive operation exposed to students at all.
+
+### 5. One change per PATCH
+
+`PATCH /api/consultations/:id` accepts exactly one of `scheduledAt`, `completed` or `status`. Each request maps to one user intent, gets one clear error, and keeps the state machine easy to reason about.
+
+### 6. Other security measures
+
+* `getClaims()` verifies the JWT signature for identity (rather than trusting `getSession()`).
+* Admin page returns 404 to non-admins; admin API returns 403. RLS returns nothing to non-admins regardless.
+* Other students' consultations return 404, not 403, so ids can't be probed.
+* CSRF: auth cookies are `SameSite=Lax`, and mutation endpoints require `Content-Type: application/json`, which a cross-site form can't send without a CORS preflight.
+* Fixed an open redirect in the starter's `/auth/confirm` (`?next=//evil.example`).
+* Security headers (`X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`).
+* Zod validation with length limits on every input; unexpected database errors are logged server-side and returned as a generic message.
+
+---
+
+## Assumptions
+
+* **First and last name are stored per consultation**, as listed in the brief, not taken from the account. This also allows a parent, for example, to book under the student's name.
+* **"Complete" is a student-controlled flag**, like ticking off a to-do, and can be toggled at any time, including before the consultation date.
+* A completed consultation must be marked incomplete before it can be rescheduled or cancelled.
+* Cancellation is final. To change your mind you book again.
+* Bookings must be in the future and within 365 days. No business hours, durations or tutor availability are modelled; the brief doesn't mention tutors.
+* A student can't hold two active bookings at the exact same time.
+* Admins are also users and can book consultations of their own; their dashboard shows only their own bookings (the query filters on `student_id`, since RLS would otherwise return every row to an admin).
+* Times are stored as `timestamptz` (UTC) and shown in the viewer's local timezone.
+
+---
+
+## What I'd do next with more time
+
+* Rate limiting on auth and booking endpoints (e.g. Upstash or an edge middleware).
+* A strict nonce-based Content Security Policy.
+* Integration tests for the route handlers (Vitest against `supabase start`) and a Playwright happy-path test; run `test:db` and these in CI.
+* Optimistic UI updates (e.g. TanStack Query) instead of `router.refresh()` after each change.
+* Pagination and search on the student dashboard; search by student on the admin view.
+* Tutors and availability slots, with an exclusion constraint to prevent overlapping bookings.
+* An audit log table written by trigger, so admins can see who changed what and when.
+* Move role checks to the JWT via a Custom Access Token Hook if role lookups ever show up in profiling.
