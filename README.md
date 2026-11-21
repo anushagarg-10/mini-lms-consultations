@@ -167,6 +167,6 @@ Admins can't take this path at all: the API answers 403, and the database's writ
 - Rate limiting on sign-in and booking.
 - API and end-to-end browser tests, running in CI.
 - Search on the admin view and pagination on the student dashboard.
-- A tutor role with availability, so double bookings are prevented per tutor, and each tutor sees the consultations booked with them.
+- A tutor role with availability: each consultation gets a tutor and a duration, students book from the tutor's free slots, and a Postgres exclusion constraint makes overlapping bookings for the same tutor impossible. Each tutor sees the consultations booked with them, and can accept or decline for reasons other than scheduling (illness, subject fit), since clashes are already prevented by the database.
 - A meeting mode on each booking (online or in person), with a meeting link or a room. It needs the tutor role to be meaningful, and the brief fixes the booking fields, so it was left out.
 - An audit log of who changed what.
