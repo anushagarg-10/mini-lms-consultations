@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CalendarClock, XCircle } from "lucide-react";
-import { ConsultationStatusBadge } from "./consultation-status-badge";
+import { CalendarClock, Clock, User, XCircle } from "lucide-react";
+import { ConsultationStatusBadge, consultationState } from "./consultation-status-badge";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,16 +29,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LocalDateTime } from "@/components/local-date-time";
 import { futureDateTime, type Consultation, type UpdateConsultationInput } from "@/lib/consultations/schemas";
-import {
-  ApiRequestError,
-  consultationsApi,
-  fromLocalInputValue,
-  toLocalInputValue,
-} from "@/lib/consultations/client-api";
+import { ApiRequestError, consultationsApi } from "@/lib/consultations/client-api";
+import { DateTimePicker } from "@/components/date-time-picker";
 
 export function ConsultationCard({ consultation }: { consultation: Consultation }) {
   const router = useRouter();
@@ -65,20 +61,33 @@ export function ConsultationCard({ consultation }: { consultation: Consultation 
   const disabled = busy || isPending;
 
   return (
-    <Card className={isCancelled ? "opacity-70" : undefined}>
+    <Card
+      className={cn(
+        "border-l-4 transition-shadow hover:shadow-md",
+        {
+          scheduled: "border-l-primary",
+          completed: "border-l-emerald-500",
+          cancelled: "border-l-muted-foreground/30 opacity-75",
+        }[consultationState(consultation)],
+      )}
+    >
       <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-3">
         <div className="grid gap-1">
-          <CardTitle className="text-base">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Clock className="size-4 text-muted-foreground" aria-hidden />
             <LocalDateTime value={consultation.scheduledAt} />
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <User className="size-4" aria-hidden />
             {consultation.firstName} {consultation.lastName}
           </p>
         </div>
         <ConsultationStatusBadge consultation={consultation} />
       </CardHeader>
       <CardContent className="grid gap-4">
-        <p className="whitespace-pre-wrap break-words text-sm">{consultation.reason}</p>
+        <p className="whitespace-pre-wrap break-words rounded-md bg-muted/50 px-3 py-2 text-sm">
+          {consultation.reason}
+        </p>
 
         {!isCancelled && (
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
@@ -129,13 +138,13 @@ function RescheduleDialog({
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [when, setWhen] = useState<Date | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const local = String(new FormData(e.currentTarget).get("scheduledAt") ?? "");
-    if (!local) return setError("Choose a new date and time");
+    if (!when) return setError("Choose a new date and time");
 
-    const iso = fromLocalInputValue(local);
+    const iso = when.toISOString();
     const parsed = futureDateTime.safeParse(iso);
     if (!parsed.success) return setError(parsed.error.issues[0]?.message ?? "Invalid date");
     if (Date.parse(iso) === Date.parse(consultation.scheduledAt)) {
@@ -150,7 +159,14 @@ function RescheduleDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); setError(null); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        setError(null);
+        setWhen(null);
+      }}
+    >
       <DialogTrigger asChild>
         <Button
           variant="outline"
@@ -171,17 +187,18 @@ function RescheduleDialog({
           </DialogHeader>
           <div className="grid gap-2">
             <Label htmlFor={`reschedule-${consultation.id}`}>New date and time</Label>
-            <Input
+            <DateTimePicker
               id={`reschedule-${consultation.id}`}
-              name="scheduledAt"
-              type="datetime-local"
-              min={toLocalInputValue(new Date())}
-              defaultValue={toLocalInputValue(new Date(consultation.scheduledAt))}
-              required
+              value={when}
+              onChange={setWhen}
+              invalid={!!error}
             />
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+              Keep current time
+            </Button>
             <Button type="submit" disabled={submitting}>
               {submitting ? "Saving..." : "Save new time"}
             </Button>

@@ -2,7 +2,7 @@
 
 A small LMS where students book and manage consultations and admins see every consultation in the system.
 
-**Stack:** Next.js 16 (App Router) · TypeScript · Supabase (Postgres, Auth, `supabase-js`, `@supabase/ssr`) · shadcn/ui + Tailwind · Zod
+**Stack:** Next.js 16 (App Router) · TypeScript · Supabase (Postgres, Auth, `supabase-js`, `@supabase/ssr`) · shadcn/ui + Tailwind · Zod · react-day-picker
 
 Built on the official `with-supabase` starter.
 
@@ -19,6 +19,7 @@ Built on the official `with-supabase` starter.
 | Reschedule | Pick a new future date and time |
 | Cancel | Confirm dialog; cancellation is kept as history, not deleted |
 | Admin view | `/admin`: read-only, paginated, filterable table of every consultation with the student's account email |
+| UI | shadcn/ui throughout: calendar + 30 minute time-slot picker (past days and slots disabled), colour-coded status badges, summary cards, loading skeletons, light/dark themes, responsive down to phone width |
 
 ---
 

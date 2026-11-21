@@ -59,12 +59,12 @@ export default async function AdminPage({
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">All consultations</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">All consultations</h1>
           <p className="text-sm text-muted-foreground">
             {total} consultation{total === 1 ? "" : "s"} across all students. Read-only.
           </p>
         </div>
-        <div className="flex gap-1 rounded-md border p-1">
+        <div className="flex gap-1 rounded-lg border bg-card p-1 shadow-sm">
           {FILTERS.map((f) => (
             <Link
               key={f.label}
@@ -72,7 +72,7 @@ export default async function AdminPage({
               className={cn(
                 "rounded px-3 py-1 text-sm",
                 query.status === f.value
-                  ? "bg-secondary font-medium"
+                  ? "bg-accent font-medium text-accent-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -82,10 +82,10 @@ export default async function AdminPage({
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
         <Table>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
               <TableHead>When</TableHead>
               <TableHead>Student</TableHead>
               <TableHead>Account</TableHead>
@@ -106,7 +106,7 @@ export default async function AdminPage({
                   <TableCell className="whitespace-nowrap">
                     <LocalDateTime value={c.scheduledAt} />
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="whitespace-nowrap font-medium">
                     {c.firstName} {c.lastName}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{c.studentEmail ?? "Unknown"}</TableCell>

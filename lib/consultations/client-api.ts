@@ -46,14 +46,3 @@ export const consultationsApi = {
       body: JSON.stringify(input),
     }),
 };
-
-/** "2026-11-21T14:30" (local time, for <input type="datetime-local">) */
-export function toLocalInputValue(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-/** Local datetime-local value -> UTC ISO string for the API. */
-export function fromLocalInputValue(value: string): string {
-  return new Date(value).toISOString();
-}

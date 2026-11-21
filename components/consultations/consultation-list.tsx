@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Consultation } from "@/lib/consultations/schemas";
+import { CalendarX2 } from "lucide-react";
 import { ConsultationCard } from "./consultation-card";
 
 type Groups = {
@@ -32,16 +33,22 @@ export function ConsultationList({ groups }: { groups: Groups }) {
       <TabsList>
         {TABS.map((t) => (
           <TabsTrigger key={t.value} value={t.value}>
-            {t.label} ({groups[t.value].length})
+            {t.label}
+            <span className="ml-1.5 rounded-full bg-muted px-1.5 text-xs tabular-nums text-muted-foreground">
+              {groups[t.value].length}
+            </span>
           </TabsTrigger>
         ))}
       </TabsList>
       {TABS.map((t) => (
         <TabsContent key={t.value} value={t.value} className="mt-4">
           {groups[t.value].length === 0 ? (
-            <p className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-              {t.empty}
-            </p>
+            <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center">
+              <span className="flex size-12 items-center justify-center rounded-full bg-muted">
+                <CalendarX2 className="size-6 text-muted-foreground" aria-hidden />
+              </span>
+              <p className="text-sm text-muted-foreground">{t.empty}</p>
+            </div>
           ) : (
             <ul className="grid gap-4">
               {groups[t.value].map((c) => (
