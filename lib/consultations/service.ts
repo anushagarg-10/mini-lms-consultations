@@ -56,7 +56,11 @@ function toConsultation(row: ConsultationRow): Consultation {
 function fromPostgrestError(error: PostgrestError): ServiceError {
   switch (error.code) {
     case "23505": // unique_violation: consultations_no_double_booking_idx
-      return new ServiceError(409, "You already have a consultation booked at that time.", "conflict");
+      return new ServiceError(
+        409,
+        "You already have a consultation booked at that time.",
+        "conflict",
+      );
     case "23514": // check_violation: raised by our triggers / CHECK constraints
       // Trigger messages are written for end users; CHECK constraint names are not.
       return new ServiceError(
@@ -127,7 +131,8 @@ export async function updateConsultation(
   if (input.scheduledAt !== undefined) patch.scheduled_at = input.scheduledAt;
   if (input.status !== undefined) patch.status = input.status;
   // The DB trigger replaces this with server time; we only signal intent.
-  if (input.completed !== undefined) patch.completed_at = input.completed ? new Date().toISOString() : null;
+  if (input.completed !== undefined)
+    patch.completed_at = input.completed ? new Date().toISOString() : null;
 
   // Scoped to the caller's own rows. Other users' rows are invisible (404),
   // which avoids leaking whether an id exists.

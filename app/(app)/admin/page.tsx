@@ -109,7 +109,9 @@ export default async function AdminPage({
                   <TableCell className="whitespace-nowrap font-medium">
                     {c.firstName} {c.lastName}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{c.studentEmail ?? "Unknown"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {c.studentEmail ?? "Unknown"}
+                  </TableCell>
                   <TableCell className="max-w-xs truncate" title={c.reason}>
                     {c.reason}
                   </TableCell>
@@ -129,10 +131,18 @@ export default async function AdminPage({
         </span>
         <div className="flex gap-2">
           <Button asChild variant="outline" size="sm" disabled={query.page <= 1}>
-            {query.page <= 1 ? <span>Previous</span> : <Link href={href(query.page - 1)}>Previous</Link>}
+            {query.page <= 1 ? (
+              <span>Previous</span>
+            ) : (
+              <Link href={href(query.page - 1)}>Previous</Link>
+            )}
           </Button>
           <Button asChild variant="outline" size="sm" disabled={query.page >= totalPages}>
-            {query.page >= totalPages ? <span>Next</span> : <Link href={href(query.page + 1)}>Next</Link>}
+            {query.page >= totalPages ? (
+              <span>Next</span>
+            ) : (
+              <Link href={href(query.page + 1)}>Next</Link>
+            )}
           </Button>
         </div>
       </div>

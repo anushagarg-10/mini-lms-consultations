@@ -36,6 +36,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Format check
+        run: npm run format:check
+
       # Runs the migrations and 35 security checks on PGlite (Postgres in
       # WebAssembly), so CI needs no Docker or Supabase instance.
       - name: Database security tests

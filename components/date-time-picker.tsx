@@ -6,7 +6,13 @@ import { CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MAX_BOOKING_DAYS_AHEAD } from "@/lib/consultations/schemas";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +57,9 @@ export function DateTimePicker({
   const lastDay = addDays(today, MAX_BOOKING_DAYS_AHEAD - 1);
 
   function emit(nextDay: Date | undefined, nextMinutes: number | undefined) {
-    onChange(nextDay !== undefined && nextMinutes !== undefined ? atMinutes(nextDay, nextMinutes) : null);
+    onChange(
+      nextDay !== undefined && nextMinutes !== undefined ? atMinutes(nextDay, nextMinutes) : null,
+    );
   }
 
   // A slot is unavailable if it has already passed today.

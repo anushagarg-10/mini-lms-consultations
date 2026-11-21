@@ -25,9 +25,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options),
@@ -44,8 +42,7 @@ export async function updateSession(request: NextRequest) {
   const isSignedIn = Boolean(data?.claims);
 
   const { pathname } = request.nextUrl;
-  const isPublic =
-    pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
+  const isPublic = pathname === "/" || PUBLIC_PATHS.some((p) => pathname.startsWith(p));
   const isApi = pathname.startsWith("/api/");
 
   if (!isSignedIn && !isPublic && !isApi) {

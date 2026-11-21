@@ -22,7 +22,11 @@ export function groupConsultations(items: Consultation[], now: number): Groups {
 }
 
 const TABS = [
-  { value: "upcoming", label: "Upcoming", empty: "No upcoming consultations. Book one to get started." },
+  {
+    value: "upcoming",
+    label: "Upcoming",
+    empty: "No upcoming consultations. Book one to get started.",
+  },
   { value: "past", label: "Past", empty: "No past consultations yet." },
   { value: "cancelled", label: "Cancelled", empty: "No cancelled consultations." },
 ] as const;

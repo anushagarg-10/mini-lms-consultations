@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import { DayPicker, getDefaultClassNames } from "react-day-picker"
+import * as React from "react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { DayPicker, getDefaultClassNames } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 /** shadcn/ui-style Calendar on react-day-picker v9. */
 function Calendar({
@@ -14,7 +14,7 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: React.ComponentProps<typeof DayPicker>) {
-  const d = getDefaultClassNames()
+  const d = getDefaultClassNames();
 
   return (
     <DayPicker
@@ -64,7 +64,7 @@ function Calendar({
       }}
       {...props}
     />
-  )
+  );
 }
 
-export { Calendar }
+export { Calendar };

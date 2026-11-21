@@ -38,10 +38,10 @@ If `supabase start` is interrupted and the app can't find its tables, run `npx s
 
 ### Test accounts
 
-| Email | Password | Role |
-| --- | --- | --- |
-| `admin@example.com` | `password123` | Admin |
-| `student@example.com` | `password123` | Student |
+| Email                  | Password      | Role    |
+| ---------------------- | ------------- | ------- |
+| `admin@example.com`    | `password123` | Admin   |
+| `student@example.com`  | `password123` | Student |
 | `student2@example.com` | `password123` | Student |
 
 Anyone who signs up becomes a student. To make someone an admin, run this in Supabase Studio (http://127.0.0.1:54323):
@@ -52,11 +52,11 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 
 ### Useful commands
 
-| Command | What it does |
-| --- | --- |
-| `npm run test:db` | Runs 35 database security tests (no Docker needed) |
-| `npx supabase db reset` | Rebuilds the local database from migrations and seed data |
-| `npm run typecheck`, `npm run lint`, `npm run build` | Code checks |
+| Command                                              | What it does                                              |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| `npm run test:db`                                    | Runs 35 database security tests (no Docker needed)        |
+| `npx supabase db reset`                              | Rebuilds the local database from migrations and seed data |
+| `npm run typecheck`, `npm run lint`, `npm run build` | Code checks                                               |
 
 GitHub Actions runs lint, the database tests, the build and the typecheck on every push and pull request (`.github/workflows/ci.yml`).
 
@@ -65,12 +65,12 @@ GitHub Actions runs lint, the database tests, the build and the typecheck on eve
 - **Pages** (`app/(app)/dashboard`, `app/(app)/admin`) load their data on the server.
 - **Changes** (book, complete, reschedule, cancel) go through REST API routes, not Server Actions:
 
-  | Method | Route | Purpose |
-  | --- | --- | --- |
-  | GET | `/api/consultations` | Your consultations |
-  | POST | `/api/consultations` | Book a consultation |
-  | PATCH | `/api/consultations/:id` | Reschedule, mark complete or incomplete, or cancel |
-  | GET | `/api/admin/consultations` | All consultations, paginated (admins only) |
+  | Method | Route                      | Purpose                                            |
+  | ------ | -------------------------- | -------------------------------------------------- |
+  | GET    | `/api/consultations`       | Your consultations                                 |
+  | POST   | `/api/consultations`       | Book a consultation                                |
+  | PATCH  | `/api/consultations/:id`   | Reschedule, mark complete or incomplete, or cancel |
+  | GET    | `/api/admin/consultations` | All consultations, paginated (admins only)         |
 
 - **Shared logic** lives in `lib/consultations/`: one set of Zod schemas for validation and one service for database queries, used by both pages and API routes.
 - **Database** setup is in `supabase/migrations/`: a `profiles` table (one per user, holds the role) and a `consultations` table.

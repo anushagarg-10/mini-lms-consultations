@@ -14,7 +14,9 @@ export function LogoutButton() {
     router.refresh();
   };
 
-  return <Button variant="outline" size="sm" onClick={logout}>
+  return (
+    <Button variant="outline" size="sm" onClick={logout}>
       Log out
-    </Button>;
+    </Button>
+  );
 }

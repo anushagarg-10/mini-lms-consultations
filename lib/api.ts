@@ -31,15 +31,14 @@ export function jsonError(status: number, code: string, message: string, details
 }
 
 /** Wrap a handler so thrown ApiError / ServiceError / ZodError become JSON. */
-export function handle<Ctx>(
-  fn: (request: NextRequest, ctx: Ctx) => Promise<Response>,
-) {
+export function handle<Ctx>(fn: (request: NextRequest, ctx: Ctx) => Promise<Response>) {
   return async (request: NextRequest, ctx: Ctx): Promise<Response> => {
     try {
       return await fn(request, ctx);
     } catch (err) {
       if (err instanceof ApiError) return jsonError(err.status, err.code, err.message, err.details);
-      if (err instanceof ServiceError) return jsonError(err.status, err.code ?? "error", err.message);
+      if (err instanceof ServiceError)
+        return jsonError(err.status, err.code ?? "error", err.message);
       if (err instanceof ZodError) {
         return jsonError(400, "validation_error", "Invalid request", err.flatten());
       }

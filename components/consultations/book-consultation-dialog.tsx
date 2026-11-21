@@ -105,10 +105,22 @@ export function BookConsultationDialog() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field id="firstName" label="First name" error={errors.firstName}>
-              <Input id="firstName" name="firstName" autoComplete="given-name" maxLength={100} required />
+              <Input
+                id="firstName"
+                name="firstName"
+                autoComplete="given-name"
+                maxLength={100}
+                required
+              />
             </Field>
             <Field id="lastName" label="Last name" error={errors.lastName}>
-              <Input id="lastName" name="lastName" autoComplete="family-name" maxLength={100} required />
+              <Input
+                id="lastName"
+                name="lastName"
+                autoComplete="family-name"
+                maxLength={100}
+                required
+              />
             </Field>
           </div>
 

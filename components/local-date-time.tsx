@@ -12,7 +12,11 @@ const OPTIONS: Intl.DateTimeFormatOptions = {
 };
 const formatter = new Intl.DateTimeFormat(undefined, OPTIONS);
 // Same shape, pinned to UTC and labelled, for the server render before hydration.
-const utcFormatter = new Intl.DateTimeFormat("en-AU", { ...OPTIONS, timeZone: "UTC", timeZoneName: "short" });
+const utcFormatter = new Intl.DateTimeFormat("en-AU", {
+  ...OPTIONS,
+  timeZone: "UTC",
+  timeZoneName: "short",
+});
 
 const subscribe = () => () => {};
 
@@ -22,7 +26,11 @@ const subscribe = () => () => {};
  * value first and the client swaps in the local format after hydration.
  */
 export function LocalDateTime({ value }: { value: string }) {
-  const isClient = useSyncExternalStore(subscribe, () => true, () => false);
+  const isClient = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
   const date = new Date(value);
   return (
     <time dateTime={value} title={date.toISOString()}>

@@ -13,9 +13,7 @@ import { listAllConsultations } from "@/lib/consultations/service";
  */
 export const GET = handle(async (request) => {
   await requireUser(["admin"]);
-  const query = adminListQuerySchema.parse(
-    Object.fromEntries(request.nextUrl.searchParams),
-  );
+  const query = adminListQuerySchema.parse(Object.fromEntries(request.nextUrl.searchParams));
   const supabase = await createClient();
   const { items, total } = await listAllConsultations(supabase, query);
   return NextResponse.json({

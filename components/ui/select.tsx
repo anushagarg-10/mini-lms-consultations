@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { CheckIcon, ChevronDownIcon } from "lucide-react"
-import { Select as SelectPrimitive } from "radix-ui"
+import * as React from "react";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
+import { Select as SelectPrimitive } from "radix-ui";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 function Select(props: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+  return <SelectPrimitive.Root data-slot="select" {...props} />;
 }
 
 function SelectValue(props: React.ComponentProps<typeof SelectPrimitive.Value>) {
-  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+  return <SelectPrimitive.Value data-slot="select-value" {...props} />;
 }
 
 function SelectTrigger({
@@ -35,7 +35,7 @@ function SelectTrigger({
         <ChevronDownIcon className="size-4 opacity-50" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
-  )
+  );
 }
 
 function SelectContent({
@@ -61,7 +61,7 @@ function SelectContent({
         <SelectPrimitive.Viewport className="p-1">{children}</SelectPrimitive.Viewport>
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
-  )
+  );
 }
 
 function SelectItem({
@@ -86,7 +86,7 @@ function SelectItem({
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
-  )
+  );
 }
 
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue }
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue };

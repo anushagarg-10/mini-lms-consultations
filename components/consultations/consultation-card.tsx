@@ -31,7 +31,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { LocalDateTime } from "@/components/local-date-time";
-import { futureDateTime, type Consultation, type UpdateConsultationInput } from "@/lib/consultations/schemas";
+import {
+  futureDateTime,
+  type Consultation,
+  type UpdateConsultationInput,
+} from "@/lib/consultations/schemas";
 import { ApiRequestError, consultationsApi } from "@/lib/consultations/client-api";
 import { DateTimePicker } from "@/components/date-time-picker";
 
@@ -193,7 +197,11 @@ function RescheduleDialog({
               onChange={setWhen}
               invalid={!!error}
             />
-            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
           </div>
           <DialogFooter className="gap-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
