@@ -7,7 +7,9 @@ import type { ServerSupabaseClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/database.types";
 import type {
   AdminConsultation,
+  AdminConsultationDetail,
   AdminListQuery,
+  AdminOverview,
   Consultation,
   CreateConsultationInput,
   UpdateConsultationInput,
@@ -25,6 +27,9 @@ import type {
 
 const COLUMNS =
   "id, student_id, first_name, last_name, reason, scheduled_at, status, completed_at, cancelled_at, created_at, updated_at";
+
+/** Columns for admin reads: the consultation plus the owning account's email. */
+const ADMIN_COLUMNS = `${COLUMNS}, student:profiles!consultations_student_id_fkey(email)`;
 
 type ConsultationRow = Tables<"consultations">;
 
@@ -157,9 +162,7 @@ export async function listAllConsultations(
 
   let request = supabase
     .from("consultations")
-    .select(`${COLUMNS}, student:profiles!consultations_student_id_fkey(email)`, {
-      count: "exact",
-    })
+    .select(ADMIN_COLUMNS, { count: "exact" })
     .order("scheduled_at", { ascending: false })
     .order("id", { ascending: true })
     .range(from, to);
@@ -169,12 +172,90 @@ export async function listAllConsultations(
   const { data, error, count } = await request;
   if (error) throw fromPostgrestError(error);
 
+  return { total: count ?? 0, items: data.map(toAdminConsultation) };
+}
+
+function toAdminConsultation({
+  student,
+  ...row
+}: ConsultationRow & { student: { email: string } | null }): AdminConsultation {
   return {
-    total: count ?? 0,
-    items: data.map(({ student, ...row }) => ({
-      ...toConsultation(row),
-      studentId: row.student_id,
-      studentEmail: student?.email ?? null,
-    })),
+    ...toConsultation(row),
+    studentId: row.student_id,
+    studentEmail: student?.email ?? null,
+  };
+}
+
+/**
+ * One consultation for the admin detail page, or null if it doesn't exist
+ * (or isn't visible: RLS only lets admins read other students' rows).
+ * Includes the student's other consultations for context.
+ */
+export async function getConsultationForAdmin(
+  supabase: ServerSupabaseClient,
+  id: string,
+): Promise<AdminConsultationDetail | null> {
+  const { data, error } = await supabase
+    .from("consultations")
+    .select(ADMIN_COLUMNS)
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw fromPostgrestError(error);
+  if (!data) return null;
+
+  const { data: others, error: othersError } = await supabase
+    .from("consultations")
+    .select(COLUMNS)
+    .eq("student_id", data.student_id)
+    .neq("id", id)
+    .order("scheduled_at", { ascending: false })
+    .limit(10);
+
+  if (othersError) throw fromPostgrestError(othersError);
+
+  return { ...toAdminConsultation(data), otherConsultations: others.map(toConsultation) };
+}
+
+/**
+ * Summary for the top of the admin view. Uses rolling windows (next 24 hours,
+ * next 7 days) rather than "today", because the server runs in UTC while
+ * "today" depends on the admin's timezone. The five queries run in parallel
+ * and the counts use HEAD requests, so no rows are transferred for them.
+ */
+export async function getAdminOverview(supabase: ServerSupabaseClient): Promise<AdminOverview> {
+  const now = new Date();
+  const hours = (h: number) => new Date(now.getTime() + h * 3_600_000).toISOString();
+  const count = () => supabase.from("consultations").select("id", { count: "exact", head: true });
+  // Scheduled, not yet completed, from now on: what an admin needs to prepare for.
+  const pending = () => count().eq("status", "scheduled").is("completed_at", null);
+
+  const [day, week, completed, cancelled, upcoming] = await Promise.all([
+    pending().gte("scheduled_at", now.toISOString()).lt("scheduled_at", hours(24)),
+    pending()
+      .gte("scheduled_at", now.toISOString())
+      .lt("scheduled_at", hours(24 * 7)),
+    count().eq("status", "scheduled").not("completed_at", "is", null),
+    count().eq("status", "cancelled"),
+    supabase
+      .from("consultations")
+      .select(ADMIN_COLUMNS)
+      .eq("status", "scheduled")
+      .is("completed_at", null)
+      .gte("scheduled_at", now.toISOString())
+      .order("scheduled_at", { ascending: true })
+      .limit(3),
+  ]);
+
+  for (const result of [day, week, completed, cancelled, upcoming]) {
+    if (result.error) throw fromPostgrestError(result.error);
+  }
+
+  return {
+    next24Hours: day.count ?? 0,
+    next7Days: week.count ?? 0,
+    completed: completed.count ?? 0,
+    cancelled: cancelled.count ?? 0,
+    upcoming: (upcoming.data ?? []).map(toAdminConsultation),
   };
 }

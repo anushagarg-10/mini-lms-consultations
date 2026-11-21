@@ -113,11 +113,14 @@ app/
     layout.tsx              header and nav; redirects if signed out
     error.tsx               error screen inside the app shell
     dashboard/              student dashboard (page, loading skeleton)
-    admin/                  admin table (layout gates the role, page, loading)
+    admin/                  admin area; layout.tsx gates the role
+      (list)/               overview and table (page, loading skeleton)
+      consultations/[id]/   read-only detail page for one consultation
   api/                      REST API (route handlers only, kept thin)
     consultations/route.ts          GET own list, POST book
     consultations/[id]/route.ts     PATCH reschedule | complete | cancel
-    admin/consultations/route.ts    GET all (admin)
+    admin/consultations/route.ts        GET all (admin), paginated
+    admin/consultations/[id]/route.ts   GET one, with the student's other bookings
   auth/                     login, sign-up, password pages (from the starter)
 components/
   ui/                       shadcn/ui primitives

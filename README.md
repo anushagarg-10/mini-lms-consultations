@@ -8,7 +8,7 @@ A small learning management system where students book and manage consultations,
 
 ![Student demo](docs/student-demo.gif)
 
-**Admin:** log in straight to every consultation across all students, filter by status (read-only).
+**Admin:** log in to an overview with reminders, every consultation across all students, and a detail page for each one (read-only).
 
 ![Admin demo](docs/admin-demo.gif)
 
@@ -20,7 +20,8 @@ A small learning management system where students book and manage consultations,
 - **Student dashboard:** your consultations, split into Upcoming, Past and Cancelled.
 - **Book:** first name, last name, reason, and a date and time.
 - **Manage:** mark a consultation complete or incomplete, reschedule it, or cancel it.
-- **Admin view:** `/admin` shows every consultation across all students. It is read-only, and it is the admin's only area: admins don't book consultations.
+- **Admin view:** `/admin` shows an overview (consultations in the next 24 hours and 7 days, completed, cancelled, and the next few coming up), then every consultation across all students, filterable by status. Reminder labels such as "Tomorrow" or "In 3 days" flag what's coming up.
+- **Consultation details (admin):** clicking any consultation opens `/admin/consultations/:id` with the full request, the student's account, a timeline (booked, changed, completed, cancelled) and the student's other consultations. Everything for admins is read-only, and admins don't book consultations.
 
 ## Getting started
 
@@ -102,12 +103,13 @@ Every API response carries the same `x-request-id`, so a reported error can be m
 - **Pages** (`app/(app)/dashboard`, `app/(app)/admin`) load their data on the server.
 - **Changes** (book, complete, reschedule, cancel) go through REST API routes, not Server Actions:
 
-  | Method | Route                      | Purpose                                            |
-  | ------ | -------------------------- | -------------------------------------------------- |
-  | GET    | `/api/consultations`       | Your consultations                                 |
-  | POST   | `/api/consultations`       | Book a consultation                                |
-  | PATCH  | `/api/consultations/:id`   | Reschedule, mark complete or incomplete, or cancel |
-  | GET    | `/api/admin/consultations` | All consultations, paginated (admins only)         |
+  | Method | Route                          | Purpose                                                                                 |
+  | ------ | ------------------------------ | --------------------------------------------------------------------------------------- |
+  | GET    | `/api/consultations`           | Your consultations                                                                      |
+  | POST   | `/api/consultations`           | Book a consultation                                                                     |
+  | PATCH  | `/api/consultations/:id`       | Reschedule, mark complete or incomplete, or cancel                                      |
+  | GET    | `/api/admin/consultations`     | All consultations, paginated (admins only)                                              |
+  | GET    | `/api/admin/consultations/:id` | One consultation with the student's account and their other consultations (admins only) |
 
 - **Shared logic** lives in `lib/consultations/`: one set of Zod schemas for validation and one service for database queries, used by both pages and API routes.
 - **Database** setup is in `supabase/migrations/`: a `profiles` table (one per user, holds the role) and a `consultations` table.
@@ -165,5 +167,6 @@ Admins can't take this path at all: the API answers 403, and the database's writ
 - Rate limiting on sign-in and booking.
 - API and end-to-end browser tests, running in CI.
 - Search on the admin view and pagination on the student dashboard.
-- Tutors with availability, so double bookings are prevented per tutor.
+- A tutor role with availability, so double bookings are prevented per tutor, and each tutor sees the consultations booked with them.
+- A meeting mode on each booking (online or in person), with a meeting link or a room. It needs the tutor role to be meaningful, and the brief fixes the booking fields, so it was left out.
 - An audit log of who changed what.

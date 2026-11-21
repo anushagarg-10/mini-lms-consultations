@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { adminListQuerySchema } from "@/lib/consultations/schemas";
-import { listAllConsultations } from "@/lib/consultations/service";
+import { getAdminOverview, listAllConsultations } from "@/lib/consultations/service";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -14,7 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ChevronRight } from "lucide-react";
 import { LocalDateTime } from "@/components/local-date-time";
+import { RelativeTime } from "@/components/relative-time";
+import { AdminOverview } from "@/components/consultations/admin-overview";
 import { ConsultationStatusBadge } from "@/components/consultations/consultation-status-badge";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +47,10 @@ export default async function AdminPage({
   const query = parsed.success ? parsed.data : adminListQuerySchema.parse({});
 
   const supabase = await createClient();
-  const { items, total } = await listAllConsultations(supabase, query);
+  const [{ items, total }, overview] = await Promise.all([
+    listAllConsultations(supabase, query),
+    getAdminOverview(supabase),
+  ]);
   const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
 
   const href = (page: number, status = query.status) => {
@@ -57,13 +63,20 @@ export default async function AdminPage({
 
   return (
     <div className="grid gap-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">All consultations</h1>
+        <p className="text-sm text-muted-foreground">
+          Every student&apos;s bookings in one place. Read-only.
+        </p>
+      </div>
+
+      <AdminOverview overview={overview} />
+
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">All consultations</h1>
-          <p className="text-sm text-muted-foreground">
-            {total} consultation{total === 1 ? "" : "s"} across all students. Read-only.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          {total} consultation{total === 1 ? "" : "s"}
+          {query.status ? ` (${query.status})` : ""}. Select one to see the full request.
+        </p>
         <div className="flex gap-1 rounded-lg border bg-card p-1 shadow-sm">
           {FILTERS.map((f) => (
             <Link
@@ -91,20 +104,35 @@ export default async function AdminPage({
               <TableHead>Account</TableHead>
               <TableHead className="w-[40%]">Reason</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="w-8">
+                <span className="sr-only">Open</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                   No consultations found.
                 </TableCell>
               </TableRow>
             ) : (
               items.map((c) => (
-                <TableRow key={c.id}>
+                // The whole row is clickable: the link in the first cell stretches
+                // over the row (after:absolute), keeping one real <a> per row.
+                <TableRow key={c.id} className="relative cursor-pointer">
                   <TableCell className="whitespace-nowrap">
-                    <LocalDateTime value={c.scheduledAt} />
+                    <Link
+                      href={`/admin/consultations/${c.id}`}
+                      className="after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-ring"
+                    >
+                      <LocalDateTime value={c.scheduledAt} />
+                    </Link>
+                    {c.status === "scheduled" && !c.completed && (
+                      <div className="mt-1">
+                        <RelativeTime value={c.scheduledAt} />
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="whitespace-nowrap font-medium">
                     {c.firstName} {c.lastName}
@@ -117,6 +145,9 @@ export default async function AdminPage({
                   </TableCell>
                   <TableCell>
                     <ConsultationStatusBadge consultation={c} />
+                  </TableCell>
+                  <TableCell>
+                    <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
                   </TableCell>
                 </TableRow>
               ))

@@ -89,3 +89,17 @@ export type AdminConsultation = Consultation & {
   studentId: string;
   studentEmail: string | null;
 };
+
+/** One consultation for the admin detail page, with the student's other bookings. */
+export type AdminConsultationDetail = AdminConsultation & {
+  otherConsultations: Consultation[];
+};
+
+/** Counts and the next few consultations for the top of the admin view. */
+export type AdminOverview = {
+  next24Hours: number;
+  next7Days: number;
+  completed: number;
+  cancelled: number;
+  upcoming: AdminConsultation[];
+};

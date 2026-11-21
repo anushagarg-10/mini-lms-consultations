@@ -1,5 +1,10 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Skeleton for the admin list only. It sits in the (list) route group so its
+ * Suspense boundary doesn't also wrap /admin/consultations/[id]: there,
+ * notFound() must run before streaming starts to send a real 404 status.
+ */
 export default function Loading() {
   return (
     <div className="grid gap-6" aria-busy="true" aria-label="Loading consultations">
