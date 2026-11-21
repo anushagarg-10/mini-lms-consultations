@@ -1,6 +1,16 @@
 # Mini LMS: Student Consultations
 
+[![CI](https://github.com/anushagarg-10/mini-lms-consultations/actions/workflows/ci.yml/badge.svg)](https://github.com/anushagarg-10/mini-lms-consultations/actions/workflows/ci.yml)
+
 A small learning management system where students book and manage consultations, and admins can see every consultation in the system.
+
+**Student:** log in, book a consultation, mark it complete, cancel another.
+
+![Student demo](docs/student-demo.gif)
+
+**Admin:** see every consultation across all students, filter by status (read-only).
+
+![Admin demo](docs/admin-demo.gif)
 
 **Built with:** Next.js 16 (App Router), TypeScript, Supabase (Postgres, Auth, `supabase-js`, `@supabase/ssr`), shadcn/ui, Tailwind and Zod. Based on the official `with-supabase` starter.
 
@@ -48,6 +58,8 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 | `npx supabase db reset` | Rebuilds the local database from migrations and seed data |
 | `npm run typecheck`, `npm run lint`, `npm run build` | Code checks |
 
+GitHub Actions runs lint, the database tests, the build and the typecheck on every push and pull request (`.github/workflows/ci.yml`).
+
 ## How it works
 
 - **Pages** (`app/(app)/dashboard`, `app/(app)/admin`) load their data on the server.
@@ -62,6 +74,34 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 
 - **Shared logic** lives in `lib/consultations/`: one set of Zod schemas for validation and one service for database queries, used by both pages and API routes.
 - **Database** setup is in `supabase/migrations/`: a `profiles` table (one per user, holds the role) and a `consultations` table.
+
+### What happens when a student books
+
+Every request passes through several independent checks. If one layer had a bug, the next would still stop bad data.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor S as Student (browser)
+    participant P as proxy.ts
+    participant A as POST /api/consultations
+    participant DB as Postgres (Supabase)
+
+    S->>P: Request with session cookie
+    P->>P: Verify JWT signature, refresh session
+    P->>A: Forward request
+    A->>A: Signed in? (else 401)
+    A->>A: Validate body with Zod (else 400)
+    A->>DB: INSERT as the signed-in user (never the service key)
+    DB->>DB: Column grants: only name, reason and time are writable
+    DB->>DB: RLS: student_id must equal auth.uid()
+    DB->>DB: Trigger: time must be in the future, status forced to scheduled
+    DB->>DB: Unique index: no double booking
+    DB-->>A: New row, or a specific error
+    A-->>S: 201 Created, or 409 / 422 with a clear message
+```
+
+Admins go through the same path. Their extra access comes only from a database rule (`is_admin()`) that lets them **read** every row. No rule lets them write, so the admin view is read-only at the database level.
 
 ## Key decisions
 
