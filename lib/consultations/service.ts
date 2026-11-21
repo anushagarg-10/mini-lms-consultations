@@ -81,8 +81,8 @@ function fromPostgrestError(error: PostgrestError): AppError {
 
 /**
  * The signed-in user's own consultations.
- * Filters on student_id explicitly: RLS lets admins read every row, and an
- * admin's own dashboard should still only show their own bookings.
+ * Filters on student_id explicitly rather than relying on RLS alone, so the
+ * query states its intent and stays correct if read policies ever widen.
  */
 export async function listOwnConsultations(
   supabase: ServerSupabaseClient,

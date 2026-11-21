@@ -58,7 +58,7 @@ erDiagram
     }
 ```
 
-Migrations: `supabase/migrations/20261121000100_profiles_and_roles.sql` and `..._consultations.sql`.
+Migrations, in order: `20261121000100_profiles_and_roles.sql`, `20261121000200_consultations.sql` and `20261122000100_students_only_write.sql` (in `supabase/migrations/`). The last one was added rather than editing the earlier files, because migrations that have already run must never change.
 
 ### `profiles`
 
@@ -94,15 +94,15 @@ Migrations: `supabase/migrations/20261121000100_profiles_and_roles.sql` and `...
 
 ### Rules enforced in the database
 
-| Layer        | Enforces                                                                                                                                                                                                                                      |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Grants**   | `anon` has no access. Students may insert only name, reason and time, and update only `scheduled_at`, `status`, `completed_at`. Nobody may `DELETE`.                                                                                          |
-| **RLS**      | Students read and update only their own rows. Admins (via `is_admin()`) can **read** all rows. There is no admin write policy, so "read-only admin" holds even if the UI had a bug.                                                           |
-| **Triggers** | Bookings start as scheduled and incomplete. Times must be in the future. Cancelled is terminal. A completed consultation can't be rescheduled or cancelled. `completed_at` and `cancelled_at` are always server time. Ownership can't change. |
+| Layer        | Enforces                                                                                                                                                                                                                                                          |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Grants**   | `anon` has no access. Students may insert only name, reason and time, and update only `scheduled_at`, `status`, `completed_at`. Nobody may `DELETE`.                                                                                                              |
+| **RLS**      | Students read their own rows, and only users with the `student` role (`is_student()`) can book or update, and only their own rows. Admins (via `is_admin()`) can **read** all rows and write nothing, so "read-only admin" holds even if the UI or API had a bug. |
+| **Triggers** | Bookings start as scheduled and incomplete. Times must be in the future. Cancelled is terminal. A completed consultation can't be rescheduled or cancelled. `completed_at` and `cancelled_at` are always server time. Ownership can't change.                     |
 
-`is_admin()` is `SECURITY DEFINER` (so it can read `profiles` without recursing through RLS) and `STABLE`. Policies call it as `(select public.is_admin())`, so Postgres evaluates it once per query instead of once per row.
+`is_admin()` and `is_student()` are `SECURITY DEFINER` (so they can read `profiles` without recursing through RLS) and `STABLE`. Policies call them as `(select public.is_admin())`, so Postgres evaluates each once per query instead of once per row.
 
-These rules are covered by `npm run test:db` (35 checks, run on PGlite so no Docker is needed, and run in CI).
+These rules are covered by `npm run test:db` (38 checks, run on PGlite so no Docker is needed, and run in CI).
 
 ## 4. Folder structure
 
@@ -177,4 +177,4 @@ Browser ──fetch──▶ Route handler ──▶ lib/api.ts ──▶ lib/co
 - **Queries are indexed and bounded.** The admin list is paginated (`page`, `pageSize` capped at 100) with an index matching its sort order. The student list is indexed by owner and capped.
 - **RLS stays cheap.** The admin check runs once per query, not per row.
 - **Connection handling** goes through Supabase's REST layer and pooler rather than one database connection per app instance.
-- **Next steps at larger scale:** put the role in the JWT with a Custom Access Token Hook to skip the per-request profile lookup; switch the admin list to cursor-based pagination; add rate limiting on booking; and move from a single `role` column to `user_roles`/`permissions` tables if roles multiply (only `is_admin()` would change in SQL).
+- **Next steps at larger scale:** put the role in the JWT with a Custom Access Token Hook to skip the per-request profile lookup; switch the admin list to cursor-based pagination; add rate limiting on booking; and move from a single `role` column to `user_roles`/`permissions` tables if roles multiply (only `is_admin()` and `is_student()` would change in SQL).

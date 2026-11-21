@@ -27,7 +27,7 @@ function describeChange(input: UpdateConsultationInput): string {
  * admin's view of it) is preserved.
  */
 export const PATCH = handle<Context>(async (request, { params }, log) => {
-  const user = await requireUser();
+  const user = await requireUser(["student"]);
   const id = consultationIdSchema.parse((await params).id);
   const input = await parseJsonBody(request, updateConsultationSchema);
   const supabase = await createClient();

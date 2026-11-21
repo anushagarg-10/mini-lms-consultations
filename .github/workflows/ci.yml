@@ -39,7 +39,7 @@ jobs:
       - name: Format check
         run: npm run format:check
 
-      # Runs the migrations and 35 security checks on PGlite (Postgres in
+      # Runs the migrations and 38 security checks on PGlite (Postgres in
       # WebAssembly), so CI needs no Docker or Supabase instance.
       - name: Database security tests
         run: npm run test:db

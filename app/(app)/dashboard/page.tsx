@@ -17,6 +17,8 @@ export const metadata: Metadata = { title: "My consultations" };
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
+  // The dashboard is student-only; admins oversee everything from /admin.
+  if (user.role !== "student") redirect("/admin");
 
   const supabase = await createClient();
   const consultations = await listOwnConsultations(supabase, user.id);

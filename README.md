@@ -8,7 +8,7 @@ A small learning management system where students book and manage consultations,
 
 ![Student demo](docs/student-demo.gif)
 
-**Admin:** see every consultation across all students, filter by status (read-only).
+**Admin:** log in straight to every consultation across all students, filter by status (read-only).
 
 ![Admin demo](docs/admin-demo.gif)
 
@@ -20,7 +20,7 @@ A small learning management system where students book and manage consultations,
 - **Student dashboard:** your consultations, split into Upcoming, Past and Cancelled.
 - **Book:** first name, last name, reason, and a date and time.
 - **Manage:** mark a consultation complete or incomplete, reschedule it, or cancel it.
-- **Admin view:** `/admin` shows every consultation across all students. It is read-only.
+- **Admin view:** `/admin` shows every consultation across all students. It is read-only, and it is the admin's only area: admins don't book consultations.
 
 ## Getting started
 
@@ -54,7 +54,7 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 
 | Command                                              | What it does                                              |
 | ---------------------------------------------------- | --------------------------------------------------------- |
-| `npm run test:db`                                    | Runs 35 database security tests (no Docker needed)        |
+| `npm run test:db`                                    | Runs 38 database security tests (no Docker needed)        |
 | `npx supabase db reset`                              | Rebuilds the local database from migrations and seed data |
 | `npm run typecheck`, `npm run lint`, `npm run build` | Code checks                                               |
 | `npm run format` / `npm run format:check`            | Format with Prettier / check formatting                   |
@@ -138,7 +138,7 @@ sequenceDiagram
     A-->>S: 201 Created, or 409 / 422 with a clear message
 ```
 
-Admins go through the same path. Their extra access comes only from a database rule (`is_admin()`) that lets them **read** every row. No rule lets them write, so the admin view is read-only at the database level.
+Admins can't take this path at all: the API answers 403, and the database's write rules require the `student` role (`is_student()`). Their only extra access is a rule (`is_admin()`) that lets them **read** every row, so the admin view is read-only at the database level.
 
 ## Key decisions
 
@@ -146,7 +146,8 @@ Admins go through the same path. Their extra access comes only from a database r
 2. **The database enforces the rules, not just the API.** Supabase's public key means anyone signed in could call the database directly, so security can't rely on the Next.js routes alone. Row Level Security (RLS) makes sure students only see and change their own consultations, and admins can read everything but change nothing. Database triggers block invalid changes, such as booking in the past or editing a cancelled consultation.
 3. **Cancelling keeps the record.** A cancelled consultation is marked as cancelled rather than deleted, so admins keep the history and students have nothing they can permanently delete.
 4. **One change per request.** Each PATCH does exactly one thing (reschedule, complete or cancel), which keeps validation and error messages simple.
-5. **Requests run as the signed-in user.** The app never uses Supabase's all-access service key, so a bug in an API route still can't expose another student's data.
+5. **Each role has one area.** Students land on "My consultations" and are the only ones who can book or change consultations. Admins land on "All consultations" and can only read. The brief describes a student-facing dashboard and an admin view, and nothing about admins booking, so admins get no dashboard. This is enforced in the pages (redirects), the API (403) and the database (student-only write rules).
+6. **Requests run as the signed-in user.** The app never uses Supabase's all-access service key, so a bug in an API route still can't expose another student's data.
 
 ## Assumptions
 

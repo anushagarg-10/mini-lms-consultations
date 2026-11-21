@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
+    "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts && prettier --write --ignore-path /dev/null lib/supabase/database.types.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

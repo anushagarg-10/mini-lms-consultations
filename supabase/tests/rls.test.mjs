@@ -232,6 +232,45 @@ await expectOk(
     as(ADMIN, `update public.consultations set status='cancelled' where id='${s2Id}' returning id`),
   rows(0),
 );
+
+// --- Admins are read-only: they never book or edit, even their own rows
+await expectOk(
+  "is_student() true for student, false for admin",
+  async () => ({
+    rows: [
+      (await as(S1, "select public.is_student() as s")).rows[0].s,
+      (await as(ADMIN, "select public.is_student() as s")).rows[0].s,
+    ],
+  }),
+  (r) => r.rows[0] === true && r.rows[1] === false,
+);
+await expectErr(
+  "admin cannot book a consultation",
+  () =>
+    as(
+      ADMIN,
+      `insert into public.consultations (first_name,last_name,reason,scheduled_at) values ('A','B','admin booking', ${future})`,
+    ),
+  "42501",
+);
+// A row owned by the admin (e.g. booked before admins became read-only),
+// inserted as the database owner to bypass RLS.
+const adminRowId = (
+  await db.query(
+    `insert into public.consultations (student_id,first_name,last_name,reason,scheduled_at) values ('${ADMIN}','A','B','legacy admin row', ${future}) returning id`,
+  )
+).rows[0].id;
+await expectOk(
+  "admin cannot update even their own row (0 rows)",
+  () =>
+    as(
+      ADMIN,
+      `update public.consultations set status='cancelled' where id='${adminRowId}' returning id`,
+    ),
+  rows(0),
+);
+await db.query(`delete from public.consultations where id='${adminRowId}'`);
+
 await expectErr("nobody can DELETE", () => as(S1, `delete from public.consultations`), "42501");
 await expectErr(
   "student cannot write cancelled_at directly",

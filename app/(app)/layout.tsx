@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, homePathFor } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Brand } from "@/components/brand";
 import { LogoutButton } from "@/components/logout-button";
@@ -11,14 +11,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
 
-  const links = [{ href: "/dashboard", label: "My consultations" }];
-  if (user.role === "admin") links.push({ href: "/admin", label: "Admin" });
+  // One area per role: students manage their own consultations; admins see
+  // everyone's, read-only. Admins don't book, so they get no dashboard.
+  const links =
+    user.role === "admin"
+      ? [{ href: "/admin", label: "All consultations" }]
+      : [{ href: "/dashboard", label: "My consultations" }];
 
   return (
     <div className="flex min-h-svh flex-col">
       <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <nav className="mx-auto flex h-16 w-full max-w-5xl items-center gap-4 px-4">
-          <Brand />
+          <Brand href={homePathFor(user.role)} />
           <div className="hidden sm:block">
             <NavLinks links={links} />
           </div>

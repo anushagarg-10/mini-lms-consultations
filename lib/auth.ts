@@ -8,6 +8,11 @@ import type { Enums } from "@/lib/supabase/database.types";
 
 export type AppRole = Enums<"app_role">;
 
+/** Where each role starts: students manage their own bookings, admins oversee all. */
+export function homePathFor(role: AppRole): string {
+  return role === "admin" ? "/admin" : "/dashboard";
+}
+
 export type SessionUser = {
   id: string;
   email: string;

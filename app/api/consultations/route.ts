@@ -6,7 +6,7 @@ import { createConsultation, listOwnConsultations } from "@/lib/consultations/se
 
 /** GET /api/consultations: the signed-in user's own consultations. */
 export const GET = handle(async () => {
-  const user = await requireUser();
+  const user = await requireUser(["student"]);
   const supabase = await createClient();
   const consultations = await listOwnConsultations(supabase, user.id);
   return NextResponse.json({ data: consultations });
@@ -14,7 +14,7 @@ export const GET = handle(async () => {
 
 /** POST /api/consultations: book a new consultation for the signed-in user. */
 export const POST = handle(async (request, _ctx, log) => {
-  const user = await requireUser();
+  const user = await requireUser(["student"]);
   const input = await parseJsonBody(request, createConsultationSchema);
   const supabase = await createClient();
   const consultation = await createConsultation(supabase, input);
