@@ -38,11 +38,11 @@ If `supabase start` is interrupted and the app can't find its tables, run `npx s
 
 ### Test accounts
 
-| Email                  | Password      | Role    |
-| ---------------------- | ------------- | ------- |
-| `admin@example.com`    | `password123` | Admin   |
-| `student@example.com`  | `password123` | Student |
-| `student2@example.com` | `password123` | Student |
+| Email                  | Password              | Role    |
+| ---------------------- | --------------------- | ------- |
+| `admin@example.com`    | `Demo-VmbwANdcZj-Lms` | Admin   |
+| `student@example.com`  | `Demo-VmbwANdcZj-Lms` | Student |
+| `student2@example.com` | `Demo-VmbwANdcZj-Lms` | Student |
 
 Anyone who signs up becomes a student. To make someone an admin, run this in Supabase Studio (http://127.0.0.1:54323):
 

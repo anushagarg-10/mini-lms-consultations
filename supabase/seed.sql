@@ -1,9 +1,9 @@
 -- =============================================================================
 -- Local development seed data. Runs on `supabase db reset` (never in prod).
 --
---   admin@example.com    / password123   (role: admin)
---   student@example.com  / password123   (role: student)
---   student2@example.com / password123   (role: student)
+--   admin@example.com    / Demo-VmbwANdcZj-Lms   (role: admin)
+--   student@example.com  / Demo-VmbwANdcZj-Lms   (role: student)
+--   student2@example.com / Demo-VmbwANdcZj-Lms   (role: student)
 -- =============================================================================
 
 create or replace function pg_temp.seed_user(p_id uuid, p_email text)
@@ -17,7 +17,7 @@ begin
     confirmation_token, email_change, email_change_token_new, recovery_token
   ) values (
     '00000000-0000-0000-0000-000000000000', p_id, 'authenticated', 'authenticated',
-    p_email, extensions.crypt('password123', extensions.gen_salt('bf')), now(),
+    p_email, extensions.crypt('Demo-VmbwANdcZj-Lms', extensions.gen_salt('bf')), now(),
     '{"provider":"email","providers":["email"]}', '{}', now(), now(),
     '', '', '', ''
   );
