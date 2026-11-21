@@ -150,6 +150,7 @@ Admins go through the same path. Their extra access comes only from a database r
 
 ## Assumptions
 
+- Bookings are confirmed immediately. There is no approval step, because the brief has no approver role and asks for a read-only admin view. Adding one later would mean a `pending` status, a database rule letting admins change only that status, and a notification to the student.
 - First and last name are entered per booking, so a parent could book for a student.
 - "Complete" is a checkbox the student controls, and can be ticked at any time.
 - A completed consultation must be marked incomplete before it can be rescheduled or cancelled.
