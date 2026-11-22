@@ -4,6 +4,8 @@
 
 A small learning management system where students book and manage consultations, and admins can see every consultation in the system.
 
+**Live demo:** https://mini-lms-consultations.netlify.app (hosted on Netlify, with a hosted Supabase project). Sign in with the test accounts below.
+
 **Student:** log in, book a consultation, mark it complete, cancel another.
 
 ![Student demo](docs/student-demo.gif)
