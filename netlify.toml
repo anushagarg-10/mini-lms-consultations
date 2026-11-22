@@ -12,5 +12,7 @@
   # into the browser bundle, and Supabase's publishable key is meant for
   # browsers (access is enforced by RLS in the database). No secret key is
   # used anywhere in the app.
-  NEXT_PUBLIC_SUPABASE_URL = "https://cfaxxgqifipdpprwcogy.supabase.co"
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_T1qoiBCrVf1PjgMaxEfEZw_ByxMkzuX"
+  # Hosted Supabase project in East US (Ohio), next to Netlify's functions
+  # region, so database round trips stay short.
+  NEXT_PUBLIC_SUPABASE_URL = "https://fqihacwrdcenknjeadqh.supabase.co"
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_AaEcY4UkiJOIRLQNgWm9hw_mvkMISDs"
