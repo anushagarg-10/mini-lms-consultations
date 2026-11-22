@@ -32,7 +32,7 @@ You need Node.js 20+ and Docker running (Docker Desktop or OrbStack).
 ```bash
 npm install
 npx supabase start          # starts Supabase locally, runs migrations and seed data
-npx supabase status         # shows the API URL and Publishable key
+npx supabase status -o env  # prints API_URL and PUBLISHABLE_KEY
 cp .env.example .env.local  # paste those two values in
 npm run dev                 # open http://localhost:3000
 ```

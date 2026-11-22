@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Don't advertise the framework in response headers.
   poweredByHeader: false,
+  // Don't generate AGENTS.md (Next's notes for AI coding tools) in the repo.
+  agentRules: false,
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
