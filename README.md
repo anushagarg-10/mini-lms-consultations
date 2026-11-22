@@ -58,7 +58,7 @@ update public.profiles set role = 'admin' where email = 'someone@example.com';
 | Command                                              | What it does                                                                |
 | ---------------------------------------------------- | --------------------------------------------------------------------------- |
 | `npm run test:db`                                    | Runs 38 database security tests (no Docker needed)                          |
-| `npm run test:api`                                   | Runs 31 API tests over real HTTP (needs the app and local Supabase running) |
+| `npm run test:api`                                   | Runs 34 API tests over real HTTP (needs the app and local Supabase running) |
 | `npx supabase db reset`                              | Rebuilds the local database from migrations and seed data                   |
 | `npm run typecheck`, `npm run lint`, `npm run build` | Code checks                                                                 |
 | `npm run format` / `npm run format:check`            | Format with Prettier / check formatting                                     |
@@ -111,7 +111,7 @@ Every API response carries the same `x-request-id`, so a reported error can be m
   | GET    | `/api/consultations`           | Your consultations                                                                      |
   | POST   | `/api/consultations`           | Book a consultation                                                                     |
   | PATCH  | `/api/consultations/:id`       | Reschedule, mark complete or incomplete, or cancel                                      |
-  | GET    | `/api/admin/consultations`     | All consultations, paginated (admins only)                                              |
+  | GET    | `/api/admin/consultations`     | All consultations, paginated, `?status=scheduled\|completed\|cancelled` (admins only)   |
   | GET    | `/api/admin/consultations/:id` | One consultation with the student's account and their other consultations (admins only) |
 
 - **Shared logic** lives in `lib/consultations/`: one set of Zod schemas for validation and one service for database queries, used by both pages and API routes.

@@ -65,7 +65,12 @@ export const consultationIdSchema = z.string().uuid("Invalid consultation id");
 export const adminListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(["scheduled", "cancelled"]).optional(),
+  /**
+   * Filters by what users see on the status badges, not the raw column:
+   * "scheduled" = not cancelled and not yet completed, "completed" = ticked
+   * off (status stays "scheduled" in the database), "cancelled" = cancelled.
+   */
+  status: z.enum(["scheduled", "completed", "cancelled"]).optional(),
 });
 
 export type AdminListQuery = z.infer<typeof adminListQuerySchema>;

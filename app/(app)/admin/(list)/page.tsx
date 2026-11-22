@@ -26,6 +26,7 @@ export const metadata: Metadata = { title: "All consultations" };
 const FILTERS = [
   { label: "All", value: undefined },
   { label: "Scheduled", value: "scheduled" },
+  { label: "Completed", value: "completed" },
   { label: "Cancelled", value: "cancelled" },
 ] as const;
 

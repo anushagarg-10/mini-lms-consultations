@@ -227,10 +227,23 @@ describe("admin (read-only)", () => {
     expect(res.body.data[0]).toHaveProperty("studentEmail");
   });
 
-  it("200: filters by status", async () => {
-    const res = await api("GET", "/api/admin/consultations?status=cancelled", { cookie: admin });
+  type Row = { status: string; completed: boolean };
+  it.each([
+    ["scheduled", (c: Row) => c.status === "scheduled" && !c.completed],
+    ["completed", (c: Row) => c.status === "scheduled" && c.completed],
+    ["cancelled", (c: Row) => c.status === "cancelled"],
+  ])("200: status=%s returns only matching consultations", async (status, matches) => {
+    const res = await api("GET", `/api/admin/consultations?status=${status}&pageSize=100`, {
+      cookie: admin,
+    });
     expect(res.status).toBe(200);
-    expect(res.body.data.every((c: { status: string }) => c.status === "cancelled")).toBe(true);
+    expect(res.body.data.length).toBeGreaterThan(0);
+    expect(res.body.data.every(matches)).toBe(true);
+  });
+
+  it("400: unknown status filter", async () => {
+    const res = await api("GET", "/api/admin/consultations?status=pending", { cookie: admin });
+    expect(res.status).toBe(400);
   });
 
   it("400: page size above the cap", async () => {

@@ -167,7 +167,12 @@ export async function listAllConsultations(
     .order("id", { ascending: true })
     .range(from, to);
 
-  if (query.status) request = request.eq("status", query.status);
+  // Matches the badges users see (see adminListQuerySchema).
+  if (query.status === "scheduled")
+    request = request.eq("status", "scheduled").is("completed_at", null);
+  else if (query.status === "completed")
+    request = request.eq("status", "scheduled").not("completed_at", "is", null);
+  else if (query.status === "cancelled") request = request.eq("status", "cancelled");
 
   const { data, error, count } = await request;
   if (error) throw fromPostgrestError(error);
