@@ -1,0 +1,16 @@
+# Netlify deployment. Netlify detects Next.js and applies its Next.js runtime
+# automatically (App Router, route handlers and proxy.ts all supported).
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Both values are public by design: NEXT_PUBLIC_ variables are compiled
+  # into the browser bundle, and Supabase's publishable key is meant for
+  # browsers (access is enforced by RLS in the database). No secret key is
+  # used anywhere in the app.
+  NEXT_PUBLIC_SUPABASE_URL = "https://cfaxxgqifipdpprwcogy.supabase.co"
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_T1qoiBCrVf1PjgMaxEfEZw_ByxMkzuX"
